@@ -3,9 +3,9 @@
 import { ShieldCheck } from "lucide-react";
 import { AnalysisProgress } from "@/components/analysis-progress";
 import { ErrorState } from "@/components/error-state";
+import { ResultsView } from "@/components/results-view";
 import { SampleReports } from "@/components/sample-reports";
 import { UploadPanel } from "@/components/upload-panel";
-import { Button } from "@/components/ui/button";
 import { useReportAnalysis } from "@/lib/use-report-analysis";
 
 export function ReportExplainer() {
@@ -29,13 +29,6 @@ export function ReportExplainer() {
     case "error":
       return <ErrorState code={state.code} message={state.message} onRetry={retry} onReset={reset} />;
     case "result":
-      return (
-        <div className="space-y-4">
-          <p className="font-medium">{state.analysis.reportType}</p>
-          <Button variant="outline" onClick={reset}>
-            Analyze another report
-          </Button>
-        </div>
-      );
+      return <ResultsView analysis={state.analysis} onReset={reset} />;
   }
 }
