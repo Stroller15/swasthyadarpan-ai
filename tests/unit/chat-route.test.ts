@@ -35,7 +35,8 @@ describe("POST /api/chat", () => {
 
   it("rejects an invalid analysis", async () => {
     const { POST } = await loadRoute();
-    const { tests: _tests, ...withoutTests } = cbc;
+    const withoutTests: Partial<typeof cbc> = structuredClone(cbc);
+    delete withoutTests.tests;
     await expectBadRequest(await POST(chatRequest({ messages: [userMessage("hi")], analysis: withoutTests })));
   });
 
