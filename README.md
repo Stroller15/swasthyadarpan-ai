@@ -1,83 +1,115 @@
-# Medical Report Analyzer AI
+# SwasthyaDarpan
 
-This is a web app designed to analyze medical reports, such as PDFs and images, and explain the results in simpler terms. Built with Next.js, Groq API, and LlamaParse, the app parses medical documents, processes the data with the Llama model via the Groq API, and generates easy-to-understand outputs.
+**Understand your lab report in plain language.** Upload a blood test or diagnostic report (PDF or photo). Every value is extracted, explained simply and checked against its normal range, and you can ask follow-up questions about your results.
 
-<img width="1850" alt="Xnapper-2024-12-08-19 00 55" src="https://github.com/user-attachments/assets/15bc863f-e3a6-4715-85a5-8032ea13b265">
+![Results for a sample blood count report](docs/images/results.png)
 
-## Live Demo
-
-
-https://github.com/user-attachments/assets/eed34700-f8c2-4710-b08b-b6956f6da994
-
-
+> Educational tool, not medical advice. Always discuss your results with a doctor.
 
 ## Features
 
-- Upload medical reports in PDF or image formats.
-- Automatically parse and extract text from the uploaded file using LlamaParse.
-- Analyze the extracted data with the Groq API, powered by the Llama model.
-- Receive detailed, user-friendly explanations of the report.
-- Supports real-time processing and output generation.
+- **Structured results.** Each test's value, unit and normal range is pulled into a table, grouped by category, with abnormal results first.
+- **Abnormal values checked twice.** The model flags each result, and then the code re-checks every numeric value against its range. The model can't mark a low hemoglobin as "normal".
+- **Chat with your report.** Ask follow-up questions. Answers come only from your report's analysis, never from guesses.
+- **Try it without uploading anything.** Three synthetic sample reports with fictitious patients run through the real pipeline.
+- **Clear failures.** Wrong file type, a non-medical document, or the free quota running out each get a specific message.
+- **Private by design.** Nothing is stored. Files are processed in memory and never written to disk, and report contents are never logged.
 
-## Behind the code
+## How it works
 
-<img width="445" alt="Xnapper-2024-12-08-19 02 05" src="https://github.com/user-attachments/assets/db285967-0cab-4f5c-aa2d-d84dbccb567e">
+```mermaid
+flowchart LR
+    U[Browser] -- PDF / image --> A["/api/analyze"]
+    A --> RL1[Rate limit]
+    RL1 --> V["Validate upload<br/>(magic bytes, 4 MB)"]
+    V --> G["Gemini<br/>structured output"]
+    G --> F["Re-check flags<br/>in code"]
+    F -- ReportAnalysis JSON --> U
+    U -- "messages + analysis" --> C["/api/chat"]
+    C --> RL2[Rate limit]
+    RL2 --> S["Gemini<br/>streamed reply"]
+    S -- stream --> U
+```
 
+1. **One model call reads the file directly.** Gemini accepts PDFs and images natively, so there is no separate OCR or parsing service. It returns JSON that must match a [zod schema](lib/schema.ts), so a malformed response fails cleanly instead of rendering garbage.
+2. **Code has the final say on flags.** [`lib/flags.ts`](lib/flags.ts) parses values like `"1,250"` and ranges like `"< 200"` or `"13 – 17"`, and overrides the model's flag whenever it can decide.
+3. **The server is stateless.** The browser keeps the analysis and sends it back with each chat message, so there's no database or session. Chat sends the extracted JSON, not the original file, which saves tokens and free-tier quota.
+4. **Everything goes through one model module.** [`lib/ai/model.ts`](lib/ai/model.ts) picks the model. With `AI_MOCK=1` it swaps in a deterministic mock, which is how the tests and CI run without an API key.
 
-## Technologies Used
+### Why these choices
 
-- **Next.js**: For building the frontend and backend logic of the app.
-- **Groq API**: For analyzing medical report data using the Llama model.
-- **LlamaParse**: For parsing text from medical reports in image or PDF format.
-- **React**: For building the interactive UI components.
+| Decision | Reason |
+| --- | --- |
+| A document-reading model instead of OCR followed by an LLM | One service instead of two, and better at tables and phone photos |
+| Schema-validated output | The UI can rely on the shape of the data, and invalid output fails loudly |
+| Flags re-checked in code | Models occasionally misread ranges, and numeric comparison is cheap and exact |
+| Stateless server | Nothing to secure or clean up, and it deploys anywhere |
+| Gemini free tier via the Vercel AI SDK | Free to run, and switching to another provider is a one-line change |
 
-## Setup
+## Tech stack
 
-To run this project locally, follow these steps:
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui · Vercel AI SDK 7 with Google Gemini · zod · Vitest · Testing Library · Playwright · GitHub Actions
 
-### Prerequisites
+## Run it locally
 
-- Node.js (v18 or higher)
-- npm or yarn
-- A Groq API key for accessing the Llama model
+You need Node.js 20+ and a free Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey).
 
-### Steps
+```bash
+git clone https://github.com/Stroller15/swasthyadarpan-ai.git
+cd swasthyadarpan-ai
+npm install
+cp .env.example .env.local   # then paste your key into GOOGLE_GENERATIVE_AI_API_KEY
+npm run dev
+```
 
-1. Clone the repository:
+Open http://localhost:3000 and click a sample report.
 
-   ```bash
-   git clone https://github.com/yourusername/medical-report-analyzer-ai.git
-   cd medical-report-analyzer-ai
-   ```
+To work on the UI without a key, run `AI_MOCK=1 npm run dev`, which returns fixture data.
 
-2. Install dependencies:
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes, unless mocked | Gemini API key |
+| `AI_MODEL` | No | Overrides the Gemini model id (default `gemini-flash-latest`) |
+| `AI_MOCK` | No | Set to `1` to use the mock model |
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+### Free-tier notes
 
-3. Set up environment variables. Create a `.env.local` file at the root of the project with the following content:
+- Google's free tier has daily request limits. The app also limits each visitor to 5 analyses and 30 chat messages per hour.
+- Google's free tier may use inputs to improve its products. The app says so on the upload screen, and the samples give visitors a way to try it without real data.
 
-   ```
-   GROQ_API_KEY=your_groq_api_key
-   ```
+## Testing
 
-4. Run the app in development mode:
+```bash
+npm test            # unit and component tests (Vitest)
+npm run test:e2e    # end-to-end tests (Playwright, mock model)
+npm run lint
+npm run typecheck
+```
 
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+CI runs all four on every push and pull request with `AI_MOCK=1`, so it needs no secrets.
 
-5. Visit [http://localhost:3000](http://localhost:3000) in your browser.
+To regenerate the sample PDFs from the fixtures, run `npm run samples`.
 
-## How It Works
+## Project layout
 
-1. **Upload Report**: Users upload a medical report in PDF or image format.
-2. **Parsing**: LlamaParse extracts text from the document.
-3. **Analysis**: The extracted text is sent to the Groq API for analysis using the Llama model.
-4. **Output**: The analyzed data is returned and displayed as simplified, easy-to-understand explanations for the user.
+```
+app/
+  api/analyze/route.ts    upload → validate → analyze
+  api/chat/route.ts       streamed, grounded follow-up chat
+  page.tsx
+components/               UI (upload, results table, chat, …)
+lib/
+  ai/                     model selection, prompts, analyzeReport
+  schema.ts               the ReportAnalysis contract
+  flags.ts                deterministic flag checking
+  upload.ts               file validation
+  rate-limit.ts, errors.ts
+tests/
+  unit/                   Vitest
+  e2e/                    Playwright
+  fixtures/               sample analyses (also used to generate the sample PDFs)
+```
 
+## Disclaimer
+
+SwasthyaDarpan explains lab reports for educational purposes only. It does not diagnose conditions or recommend treatment, and it can make mistakes. Always talk to a qualified doctor about your results.

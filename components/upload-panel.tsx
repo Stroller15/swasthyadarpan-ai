@@ -44,7 +44,8 @@ export function UploadPanel({ onFile, disabled }: { onFile: (file: File) => void
           disabled && "pointer-events-none opacity-60",
         )}
       >
-        <input {...getInputProps()} data-testid="upload-input" />
+        {/* react-dropzone's hidden input style differs slightly between server and client render. */}
+        <input {...getInputProps()} data-testid="upload-input" suppressHydrationWarning />
         <div className="rounded-full bg-primary/10 p-3 text-primary">
           <FileUp className="size-6" aria-hidden />
         </div>
