@@ -3,6 +3,7 @@
 import { ShieldCheck } from "lucide-react";
 import { AnalysisProgress } from "@/components/analysis-progress";
 import { ErrorState } from "@/components/error-state";
+import { ReportChat } from "@/components/report-chat";
 import { ResultsView } from "@/components/results-view";
 import { SampleReports } from "@/components/sample-reports";
 import { UploadPanel } from "@/components/upload-panel";
@@ -29,6 +30,12 @@ export function ReportExplainer() {
     case "error":
       return <ErrorState code={state.code} message={state.message} onRetry={retry} onReset={reset} />;
     case "result":
-      return <ResultsView analysis={state.analysis} onReset={reset} />;
+      return (
+        <ResultsView
+          analysis={state.analysis}
+          onReset={reset}
+          chatSlot={<ReportChat analysis={state.analysis} />}
+        />
+      );
   }
 }

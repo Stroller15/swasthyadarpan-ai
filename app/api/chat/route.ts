@@ -1,6 +1,7 @@
 import { convertToModelMessages, safeValidateUIMessages, streamText } from "ai";
 import { z } from "zod";
 import { getModel } from "@/lib/ai/model";
+import { MAX_CHAT_MESSAGES } from "@/lib/constants";
 import { buildChatSystemPrompt } from "@/lib/ai/prompts";
 import { AppError, errorResponse, toAppError } from "@/lib/errors";
 import { chatLimiter, clientKey } from "@/lib/rate-limit";
@@ -8,8 +9,6 @@ import { ReportAnalysisSchema } from "@/lib/schema";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
-
-export const MAX_CHAT_MESSAGES = 20;
 
 const ChatBodySchema = z.object({
   messages: z
