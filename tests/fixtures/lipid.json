@@ -1,0 +1,27 @@
+{
+  "isMedicalReport": true,
+  "reportType": "Lipid Profile",
+  "reportDate": "2026-09-30",
+  "patient": { "name": "Priya Nair", "age": "48", "sex": "Female" },
+  "summary": "Your LDL ('bad') cholesterol is higher than recommended, while your HDL ('good') cholesterol and triglycerides look fine. High LDL raises long-term heart risk, so it's worth a conversation with your doctor.",
+  "tests": [
+    { "name": "Total cholesterol", "value": "228", "unit": "mg/dL", "referenceRange": { "high": 200, "text": "< 200" }, "flag": "high", "explanation": "The total amount of cholesterol in your blood is above the desirable level.", "category": "Cholesterol" },
+    { "name": "LDL cholesterol", "value": "162", "unit": "mg/dL", "referenceRange": { "high": 100, "text": "< 100" }, "flag": "high", "explanation": "LDL can build up in artery walls; yours is above the recommended level.", "category": "Cholesterol" },
+    { "name": "HDL cholesterol", "value": "52", "unit": "mg/dL", "referenceRange": { "low": 50, "text": "> 50" }, "flag": "normal", "explanation": "HDL helps clear cholesterol; yours is in the healthy range.", "category": "Cholesterol" },
+    { "name": "Triglycerides", "value": "138", "unit": "mg/dL", "referenceRange": { "high": 150, "text": "< 150" }, "flag": "normal", "explanation": "Triglycerides are a type of blood fat; yours are normal.", "category": "Fats" }
+  ],
+  "keyFindings": [
+    "LDL cholesterol is high at 162 mg/dL (recommended below 100).",
+    "Total cholesterol is high at 228 mg/dL.",
+    "HDL and triglycerides are within healthy limits."
+  ],
+  "questionsForDoctor": [
+    "What is my overall heart risk given these numbers?",
+    "Should I try lifestyle changes first, and when should I retest?"
+  ],
+  "generalTips": [
+    "Regular brisk walking most days of the week supports healthy cholesterol.",
+    "Choosing whole grains, nuts and less fried food can help lower LDL."
+  ],
+  "urgency": "soon"
+}
