@@ -10,6 +10,12 @@ test("sample report → results → chat", async ({ page }) => {
 
   await page.getByRole("button", { name: "Is anything here urgent?" }).click();
   await expect(page.getByText(/hemoglobin is a little below/i)).toBeVisible();
+
+  // A follow-up resends the history, including the assistant reply's real stream parts.
+  await page.getByRole("textbox", { name: "Ask a question about your results" }).fill("Why does that matter?");
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByText(/hemoglobin is a little below/i)).toHaveCount(2);
+  await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0); // outside main: Next.js route announcer
 });
 
 test("invalid file shows an error", async ({ page }) => {

@@ -2,7 +2,7 @@ import { generateText, Output, type LanguageModel } from "ai";
 import { getModel } from "@/lib/ai/model";
 import { ANALYSIS_PROMPT, SAFETY_RULES } from "@/lib/ai/prompts";
 import { AppError } from "@/lib/errors";
-import { reconcileFlags } from "@/lib/flags";
+import { deriveUrgency, reconcileFlags } from "@/lib/flags";
 import { ReportAnalysisSchema, type ReportAnalysis } from "@/lib/schema";
 import type { UploadMediaType } from "@/lib/upload";
 
@@ -12,7 +12,8 @@ export async function analyzeReport(
 ): Promise<ReportAnalysis> {
   const { output } = await generateText({
     model,
-    temperature: 0.2,
+    // Gemini 3 models are tuned for the default temperature; the schema keeps output structured.
+    maxRetries: 1,
     system: `${ANALYSIS_PROMPT}\n\n${SAFETY_RULES}`,
     messages: [
       {
@@ -29,5 +30,6 @@ export async function analyzeReport(
   if (!output.isMedicalReport) {
     throw new AppError("NOT_MEDICAL_REPORT", output.rejectionReason);
   }
-  return { ...output, tests: reconcileFlags(output.tests) };
+  const tests = reconcileFlags(output.tests);
+  return { ...output, tests, urgency: deriveUrgency(tests, output.urgency) };
 }

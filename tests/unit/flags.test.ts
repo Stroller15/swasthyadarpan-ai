@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseNumericValue, parseRangeText, reconcileFlag, reconcileFlags } from "@/lib/flags";
+import { deriveUrgency, parseNumericValue, parseRangeText, reconcileFlag, reconcileFlags } from "@/lib/flags";
 import type { TestResult } from "@/lib/schema";
 
 const t = (over: Partial<TestResult>): TestResult => ({
@@ -17,6 +17,8 @@ describe("parseNumericValue", () => {
     ["1,250", 1250],
     ["12.5 H", 12.5],
     ["9.1 L", 9.1],
+    ["12,5", 12.5],
+    ["1,250.5", 1250.5],
     ["<0.5", null],
     [">90", null],
     ["Negative", null],
@@ -75,5 +77,20 @@ describe("reconcileFlags", () => {
     const out = reconcileFlags(input);
     expect(out[0].flag).toBe("low");
     expect(input[0].flag).toBe("normal");
+  });
+});
+
+describe("deriveUrgency", () => {
+  it("raises routine to soon when a reconciled test is abnormal", () => {
+    expect(deriveUrgency([t({ flag: "low" })], "routine")).toBe("soon");
+  });
+  it("raises anything to urgent when a test is critical", () => {
+    expect(deriveUrgency([t({ flag: "critical" })], "soon")).toBe("urgent");
+  });
+  it("never lowers the model's urgency", () => {
+    expect(deriveUrgency([t({ flag: "normal" })], "urgent")).toBe("urgent");
+  });
+  it("keeps routine when everything is normal", () => {
+    expect(deriveUrgency([t({ flag: "normal" })], "routine")).toBe("routine");
   });
 });

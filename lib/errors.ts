@@ -1,3 +1,5 @@
+import { APICallError, RetryError } from "ai";
+
 export type ErrorCode =
   | "BAD_REQUEST"
   | "INVALID_FILE"
@@ -39,16 +41,30 @@ export class AppError extends Error {
 }
 
 function hasStatusCode(err: unknown, status: number): boolean {
+  if (APICallError.isInstance(err)) return err.statusCode === status;
   return typeof err === "object" && err !== null && "statusCode" in err && err.statusCode === status;
 }
 
 export function toAppError(err: unknown): AppError {
   if (err instanceof AppError) return err;
-  if (hasStatusCode(err, 429)) return new AppError("QUOTA_EXCEEDED");
+  // The AI SDK wraps provider errors in a RetryError once its retries run out.
+  const cause = RetryError.isInstance(err) ? err.lastError : err;
+  if (hasStatusCode(cause, 429)) return new AppError("QUOTA_EXCEEDED");
   return new AppError("ANALYSIS_FAILED");
 }
 
+/** Logs what went wrong without the error message, which can echo report content. */
+function logUnexpected(err: unknown) {
+  const cause = RetryError.isInstance(err) ? err.lastError : err;
+  console.error("[api] unexpected error", {
+    name: err instanceof Error ? err.name : typeof err,
+    cause: cause instanceof Error ? cause.name : undefined,
+    statusCode: APICallError.isInstance(cause) ? cause.statusCode : undefined,
+  });
+}
+
 export function errorResponse(err: unknown): Response {
+  if (!(err instanceof AppError)) logUnexpected(err);
   const appError = toAppError(err);
   return Response.json(
     { error: { code: appError.code, message: appError.message } },

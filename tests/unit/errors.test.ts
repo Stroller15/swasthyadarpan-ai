@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { APICallError, RetryError } from "ai";
+import { describe, expect, it, vi } from "vitest";
 import { AppError, errorResponse, toAppError } from "@/lib/errors";
 
 describe("toAppError", () => {
@@ -35,5 +36,38 @@ describe("errorResponse", () => {
     const res = errorResponse(new AppError("NOT_MEDICAL_REPORT", "This looks like a bill."));
     expect(res.status).toBe(422);
     expect((await res.json()).error.message).toBe("This looks like a bill.");
+  });
+});
+
+describe("toAppError with real AI SDK errors", () => {
+  const quotaError = () =>
+    new APICallError({ message: "Resource exhausted", url: "https://x", requestBodyValues: {}, statusCode: 429 });
+
+  it("maps an APICallError 429 to QUOTA_EXCEEDED", () => {
+    expect(toAppError(quotaError()).code).toBe("QUOTA_EXCEEDED");
+  });
+
+  it("unwraps a RetryError whose last attempt hit the quota", () => {
+    const err = new RetryError({ message: "Failed after 2 attempts", reason: "maxRetriesExceeded", errors: [quotaError(), quotaError()] });
+    expect(toAppError(err).code).toBe("QUOTA_EXCEEDED");
+  });
+});
+
+describe("errorResponse logging", () => {
+  it("logs unexpected errors by name without their message", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    errorResponse(new TypeError("patient name: Aarav"));
+    expect(spy).toHaveBeenCalledOnce();
+    const logged = JSON.stringify(spy.mock.calls[0]);
+    expect(logged).toContain("TypeError");
+    expect(logged).not.toContain("Aarav");
+    spy.mockRestore();
+  });
+
+  it("does not log expected AppErrors", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    errorResponse(new AppError("RATE_LIMITED"));
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
   });
 });

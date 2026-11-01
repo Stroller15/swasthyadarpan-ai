@@ -57,6 +57,40 @@ describe("POST /api/chat", () => {
     await expectBadRequest(await POST(chatRequest({ messages: [system, userMessage("hi")], analysis: cbc })));
   });
 
+  it("accepts a follow-up whose history includes a real assistant reply", async () => {
+    const { POST } = await loadRoute();
+    const assistant = {
+      id: "a1",
+      role: "assistant",
+      parts: [{ type: "step-start" }, { type: "text", text: "Your hemoglobin is low.", state: "done" }],
+    };
+    const res = await POST(
+      chatRequest({ messages: [userMessage("Is anything urgent?"), assistant, userMessage("Why?", "m2")], analysis: cbc }),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it("rejects non-text message parts", async () => {
+    const { POST } = await loadRoute();
+    const withFile = {
+      id: "m1",
+      role: "user",
+      parts: [{ type: "file", mediaType: "image/png", url: "https://example.com/x.png" }],
+    };
+    await expectBadRequest(await POST(chatRequest({ messages: [withFile], analysis: cbc })));
+  });
+
+  it("rejects an overly long message", async () => {
+    const { POST } = await loadRoute();
+    await expectBadRequest(await POST(chatRequest({ messages: [userMessage("x".repeat(1001))], analysis: cbc })));
+  });
+
+  it("rejects an oversized analysis", async () => {
+    const { POST } = await loadRoute();
+    const bloated = { ...cbc, summary: "x".repeat(60_000) };
+    await expectBadRequest(await POST(chatRequest({ messages: [userMessage("hi")], analysis: bloated })));
+  });
+
   it("rejects a body that isn't JSON", async () => {
     const { POST } = await loadRoute();
     const req = new Request("http://localhost/api/chat", { method: "POST", body: "nope" });

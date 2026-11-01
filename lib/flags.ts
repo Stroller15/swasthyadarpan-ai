@@ -1,8 +1,9 @@
-import type { Flag, TestResult } from "@/lib/schema";
+import type { Flag, TestResult, Urgency } from "@/lib/schema";
 
 type Bounds = { low?: number; high?: number };
 
 const NUMBER = String.raw`(\d+(?:\.\d+)?)`;
+const THOUSANDS = /^\d{1,3}(?:,\d{3})+(?:\.\d+)?$/;
 const TRAILING_TEXT = String.raw`\s*[^\d]*$`;
 const BETWEEN = new RegExp(String.raw`^${NUMBER}\s*(?:-|to)\s*${NUMBER}${TRAILING_TEXT}`, "i");
 const UPPER_ONLY = new RegExp(String.raw`^(?:<=?|≤|up\s*to|below|less\s+than)\s*${NUMBER}${TRAILING_TEXT}`, "i");
@@ -10,7 +11,9 @@ const LOWER_ONLY = new RegExp(String.raw`^(?:>=?|≥|above|more\s+than|greater\s
 
 /** Reads a printed result as a number. Returns null for text and for values with a comparator ("<0.5"). */
 export function parseNumericValue(value: string): number | null {
-  const cleaned = value.replace(/,/g, "").trim().replace(/\s*(?:HH|LL|H|L|\*)$/i, "");
+  const stripped = value.trim().replace(/\s*(?:HH|LL|H|L|\*)$/i, "");
+  // "7,200" groups thousands; "12,5" is a decimal comma.
+  const cleaned = THOUSANDS.test(stripped) ? stripped.replace(/,/g, "") : stripped.replace(",", ".");
   return /^\d+(?:\.\d+)?$/.test(cleaned) ? Number(cleaned) : null;
 }
 
@@ -53,4 +56,16 @@ export function reconcileFlag(test: TestResult): Flag {
 
 export function reconcileFlags(tests: TestResult[]): TestResult[] {
   return tests.map((test) => ({ ...test, flag: reconcileFlag(test) }));
+}
+
+const URGENCY_RANK: Urgency[] = ["routine", "soon", "urgent"];
+
+/** Raises the model's urgency to match the reconciled flags; never lowers it. */
+export function deriveUrgency(tests: TestResult[], modelUrgency: Urgency): Urgency {
+  const floor: Urgency = tests.some((t) => t.flag === "critical")
+    ? "urgent"
+    : tests.some((t) => t.flag === "low" || t.flag === "high")
+      ? "soon"
+      : "routine";
+  return URGENCY_RANK[Math.max(URGENCY_RANK.indexOf(floor), URGENCY_RANK.indexOf(modelUrgency))];
 }

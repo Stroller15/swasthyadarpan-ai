@@ -37,11 +37,19 @@ describe("analyzeReport", () => {
     });
   });
 
-  it("sends the file as a file part with temperature 0.2", async () => {
+  it("raises urgency when reconciliation finds an abnormal value", async () => {
+    const calm = structuredClone(cbc);
+    calm.tests[0].flag = "normal";
+    calm.urgency = "routine";
+    const result = await analyzeReport(pdf, modelReturning(calm));
+    expect(result.urgency).toBe("soon");
+  });
+
+  it("sends the file as a file part at the model's default temperature", async () => {
     const model = modelReturning(cbc);
     await analyzeReport(pdf, model);
     const call = model.doGenerateCalls[0];
-    expect(call.temperature).toBe(0.2);
+    expect(call.temperature).toBeUndefined();
     const userMessage = call.prompt.find((m) => m.role === "user");
     const parts = Array.isArray(userMessage?.content) ? userMessage.content : [];
     expect(parts.some((p) => p.type === "file" && p.mediaType === "application/pdf")).toBe(true);

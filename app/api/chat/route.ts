@@ -8,14 +8,32 @@ import { chatLimiter, clientKey } from "@/lib/rate-limit";
 import { ReportAnalysisSchema } from "@/lib/schema";
 
 export const runtime = "nodejs";
+
+const MAX_MESSAGE_CHARS = 1000;
+const MAX_ANALYSIS_CHARS = 50_000;
 export const maxDuration = 60;
 
 const ChatBodySchema = z.object({
   messages: z
-    .array(z.object({ role: z.enum(["user", "assistant"]) }).loose())
+    .array(
+      z
+        .object({
+          role: z.enum(["user", "assistant"]),
+          // Text only: the chat must not become a free multimodal proxy to the model.
+          parts: z
+            .array(
+              z.union([
+                z.object({ type: z.literal("text"), text: z.string().max(MAX_MESSAGE_CHARS) }).loose(),
+                z.object({ type: z.literal("step-start") }), // content-free marker in assistant replies
+              ]),
+            )
+            .min(1),
+        })
+        .loose(),
+    )
     .min(1)
     .max(MAX_CHAT_MESSAGES),
-  analysis: ReportAnalysisSchema,
+  analysis: ReportAnalysisSchema.refine((a) => JSON.stringify(a).length <= MAX_ANALYSIS_CHARS),
 });
 
 export async function POST(req: Request): Promise<Response> {
@@ -31,6 +49,7 @@ export async function POST(req: Request): Promise<Response> {
       model: getModel(),
       system: buildChatSystemPrompt(parsed.data.analysis),
       messages: await convertToModelMessages(validated.data),
+      maxRetries: 1,
     });
     // Errors after streaming starts (e.g. quota) reach the client as a friendly message.
     return result.toUIMessageStreamResponse({ onError: (err) => toAppError(err).message });
