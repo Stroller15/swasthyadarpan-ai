@@ -13,6 +13,7 @@
 - **Chat with your report.** Ask follow-up questions. Answers come only from your report's analysis, never from guesses.
 - **Try it without uploading anything.** Three synthetic sample reports with fictitious patients run through the real pipeline.
 - **Clear failures.** Wrong file type, a non-medical document, or the free quota running out each get a specific message.
+- **Light and dark themes.** Follows your system setting by default, with a toggle to force light or dark.
 - **Private by design.** Nothing is stored. Files are processed in memory and never written to disk, and report contents are never logged.
 
 ## How it works
