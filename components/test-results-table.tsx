@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 const DASH = "—";
 
 const ROW_TINT: Partial<Record<Flag, string>> = {
-  low: "bg-amber-50/70 hover:bg-amber-50",
-  high: "bg-red-50/70 hover:bg-red-50",
-  critical: "bg-red-50 hover:bg-red-100/70",
+  low: "bg-status-low-row hover:bg-status-low-row",
+  high: "bg-status-high-row hover:bg-status-high-row",
+  critical: "bg-status-high-row hover:bg-status-high-row",
 };
 
 export function TestResultsTable({ tests }: { tests: TestResult[] }) {

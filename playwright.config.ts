@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 3000;
+// A dedicated port, so a running `npm run dev` (with a real key) is never reused by mistake.
+const PORT = 3210;
 
 export default defineConfig({
   testDir: "tests/e2e",

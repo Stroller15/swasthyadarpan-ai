@@ -5,9 +5,9 @@ import type { ReportAnalysis, Urgency } from "@/lib/schema";
 import { cn } from "@/lib/utils";
 
 const URGENCY: Record<Urgency, { label: string; className: string }> = {
-  routine: { label: "Routine", className: "bg-emerald-100 text-emerald-800" },
-  soon: { label: "See a doctor soon", className: "bg-amber-100 text-amber-800" },
-  urgent: { label: "Seek care promptly", className: "bg-red-600 text-white" },
+  routine: { label: "Routine", className: "bg-status-normal text-status-normal-foreground" },
+  soon: { label: "See a doctor soon", className: "bg-status-low text-status-low-foreground" },
+  urgent: { label: "Seek care promptly", className: "bg-status-critical text-status-critical-foreground" },
 };
 
 export function SummaryCard({ analysis }: { analysis: ReportAnalysis }) {
