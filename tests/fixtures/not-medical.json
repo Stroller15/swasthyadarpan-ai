@@ -1,0 +1,11 @@
+{
+  "isMedicalReport": false,
+  "rejectionReason": "This looks like a restaurant bill, not a medical report.",
+  "reportType": "Not a medical report",
+  "summary": "",
+  "tests": [],
+  "keyFindings": [],
+  "questionsForDoctor": [],
+  "generalTips": [],
+  "urgency": "routine"
+}

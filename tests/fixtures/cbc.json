@@ -1,0 +1,30 @@
+{
+  "isMedicalReport": true,
+  "reportType": "Complete Blood Count",
+  "reportDate": "2026-10-12",
+  "patient": { "name": "Aarav Mehta", "age": "34", "sex": "Male" },
+  "summary": "Most of your blood counts are in the healthy range. Your hemoglobin is a little low, which can make you feel tired and is often linked to low iron. It's worth discussing with your doctor.",
+  "tests": [
+    { "name": "Hemoglobin", "value": "10.8", "unit": "g/dL", "referenceRange": { "low": 13, "high": 17, "text": "13 - 17" }, "flag": "low", "explanation": "Hemoglobin carries oxygen in your blood; yours is below the usual range.", "category": "Red blood cells" },
+    { "name": "RBC count", "value": "4.7", "unit": "million/µL", "referenceRange": { "low": 4.5, "high": 5.5, "text": "4.5 - 5.5" }, "flag": "normal", "explanation": "The number of red blood cells is in the healthy range.", "category": "Red blood cells" },
+    { "name": "Hematocrit", "value": "41", "unit": "%", "referenceRange": { "low": 40, "high": 50, "text": "40 - 50" }, "flag": "normal", "explanation": "The share of your blood made up of red cells is normal.", "category": "Red blood cells" },
+    { "name": "WBC count", "value": "7,200", "unit": "/µL", "referenceRange": { "low": 4000, "high": 11000, "text": "4,000 - 11,000" }, "flag": "normal", "explanation": "White blood cells fight infection; your count is normal.", "category": "White blood cells" },
+    { "name": "Neutrophils", "value": "58", "unit": "%", "referenceRange": { "low": 40, "high": 70, "text": "40 - 70" }, "flag": "normal", "explanation": "The most common infection-fighting cells are in the normal range.", "category": "White blood cells" },
+    { "name": "Platelet count", "value": "2.6", "unit": "lakh/µL", "referenceRange": { "low": 1.5, "high": 4.5, "text": "1.5 - 4.5" }, "flag": "normal", "explanation": "Platelets help your blood clot; your count is healthy.", "category": "Platelets" },
+    { "name": "Platelet morphology", "value": "Normal", "flag": "normal", "explanation": "Your platelets look normal under the microscope.", "category": "Platelets" }
+  ],
+  "keyFindings": [
+    "Hemoglobin is low at 10.8 g/dL (usual range 13 - 17), which suggests mild anemia.",
+    "White blood cells and platelets are normal."
+  ],
+  "questionsForDoctor": [
+    "Could my low hemoglobin be caused by low iron or vitamin B12?",
+    "Do I need further tests such as serum ferritin?",
+    "When should I repeat this blood test?"
+  ],
+  "generalTips": [
+    "Include iron-rich foods like leafy greens, lentils and jaggery in your meals.",
+    "Pair iron-rich foods with vitamin C sources such as citrus fruits to help absorption."
+  ],
+  "urgency": "soon"
+}

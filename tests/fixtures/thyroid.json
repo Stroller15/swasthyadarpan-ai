@@ -1,0 +1,16 @@
+{
+  "isMedicalReport": true,
+  "reportType": "Thyroid Function Test",
+  "reportDate": "2026-10-05",
+  "patient": { "name": "Rohan Das", "age": "29", "sex": "Male" },
+  "summary": "All your thyroid values are within the normal range, which means your thyroid gland appears to be working well.",
+  "tests": [
+    { "name": "TSH", "value": "2.1", "unit": "µIU/mL", "referenceRange": { "low": 0.4, "high": 4.0, "text": "0.4 - 4.0" }, "flag": "normal", "explanation": "TSH tells your thyroid how hard to work; yours is normal.", "category": "Thyroid" },
+    { "name": "Total T3", "value": "1.2", "unit": "ng/mL", "referenceRange": { "low": 0.8, "high": 2.0, "text": "0.8 - 2.0" }, "flag": "normal", "explanation": "T3 is an active thyroid hormone; your level is normal.", "category": "Thyroid" },
+    { "name": "Total T4", "value": "8.4", "unit": "µg/dL", "referenceRange": { "low": 5.1, "high": 14.1, "text": "5.1 - 14.1" }, "flag": "normal", "explanation": "T4 is the main hormone your thyroid makes; your level is normal.", "category": "Thyroid" }
+  ],
+  "keyFindings": ["All thyroid values are within the normal range."],
+  "questionsForDoctor": ["Is there any reason to repeat this test, or is a routine yearly check enough?"],
+  "generalTips": ["Keep up a balanced diet that includes iodised salt."],
+  "urgency": "routine"
+}
