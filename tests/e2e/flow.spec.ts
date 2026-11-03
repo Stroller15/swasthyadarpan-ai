@@ -18,13 +18,20 @@ test("sample report → results → chat", async ({ page }) => {
   await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0); // outside main: Next.js route announcer
 });
 
-test("invalid file shows an error", async ({ page }) => {
+test("choosing a file waits for Analyze report; an invalid file shows an error", async ({ page }) => {
+  const analyzeCalls: string[] = [];
+  page.on("request", (req) => req.url().endsWith("/api/analyze") && analyzeCalls.push(req.url()));
+
   await page.goto("/");
   await page.getByTestId("upload-input").setInputFiles({
     name: "not-a-report.pdf",
     mimeType: "application/pdf",
     buffer: Buffer.from("hello, this is plain text"),
   });
+  await expect(page.getByText("not-a-report.pdf")).toBeVisible();
+  expect(analyzeCalls).toHaveLength(0);
+
+  await page.getByRole("button", { name: "Analyze report" }).click();
   await expect(page.getByText("That file isn't a supported report")).toBeVisible();
   await expect(page.getByRole("button", { name: "Choose another file" })).toBeVisible();
 });

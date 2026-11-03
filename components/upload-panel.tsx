@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
-import { FileUp } from "lucide-react";
+import { FileText, FileUp, Sparkles, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { MAX_UPLOAD_BYTES } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 
@@ -20,8 +21,15 @@ function rejectionMessage(rejection: FileRejection): string {
   return "That file can't be used";
 }
 
+function formatBytes(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export function UploadPanel({ onFile, disabled }: { onFile: (file: File) => void; disabled?: boolean }) {
   const [error, setError] = useState<string | null>(null);
+  // Choosing a file only selects it; analysis starts when the user confirms.
+  const [selected, setSelected] = useState<File | null>(null);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: ACCEPT,
     maxSize: MAX_UPLOAD_BYTES,
@@ -29,9 +37,12 @@ export function UploadPanel({ onFile, disabled }: { onFile: (file: File) => void
     disabled,
     onDropAccepted: ([file]) => {
       setError(null);
-      onFile(file);
+      setSelected(file);
     },
-    onDropRejected: ([rejection]) => setError(rejectionMessage(rejection)),
+    onDropRejected: ([rejection]) => {
+      setSelected(null);
+      setError(rejectionMessage(rejection));
+    },
   });
 
   return (
@@ -50,10 +61,41 @@ export function UploadPanel({ onFile, disabled }: { onFile: (file: File) => void
           <FileUp className="size-6" aria-hidden />
         </div>
         <div>
-          <p className="font-medium">{isDragActive ? "Drop your report here" : "Drop your report here, or click to choose"}</p>
+          <p className="font-medium">
+            {isDragActive
+              ? "Drop your report here"
+              : selected
+                ? "Drop or click to choose a different file"
+                : "Drop your report here, or click to choose"}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">PDF, PNG, JPEG or WebP · up to 4 MB</p>
         </div>
       </div>
+      {selected && (
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <FileText className="size-5 shrink-0 text-primary" aria-hidden />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{selected.name}</p>
+              <p className="text-xs text-muted-foreground">{formatBytes(selected.size)}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="ml-auto sm:ml-0"
+              onClick={() => setSelected(null)}
+              aria-label={`Remove ${selected.name}`}
+              disabled={disabled}
+            >
+              <X aria-hidden />
+            </Button>
+          </div>
+          <Button size="lg" onClick={() => onFile(selected)} disabled={disabled}>
+            <Sparkles aria-hidden />
+            Analyze report
+          </Button>
+        </div>
+      )}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
