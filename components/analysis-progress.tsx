@@ -18,13 +18,13 @@ export function AnalysisProgress() {
   }, [active]);
 
   return (
-    <div role="status" aria-live="polite" className="mx-auto max-w-sm space-y-4 rounded-2xl border border-border bg-card p-8">
+    <div role="status" aria-live="polite" className="mx-auto max-w-sm space-y-4 rounded-xl border border-border bg-card p-6">
       <p className="text-center font-medium">Analyzing your report…</p>
       <ol className="space-y-3">
         {STEPS.map((step, i) => (
           <li key={step} className={cn("flex items-center gap-3 text-sm", i > active && "text-muted-foreground")}>
             {i < active ? (
-              <Check className="size-4 text-primary" aria-hidden />
+              <Check className="size-4 text-muted-foreground" aria-hidden />
             ) : i === active ? (
               <Loader2 className="size-4 animate-spin text-primary" aria-hidden />
             ) : (

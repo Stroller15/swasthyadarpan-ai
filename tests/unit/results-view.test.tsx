@@ -15,13 +15,15 @@ describe("ResultsView", () => {
     const row = screen.getAllByTestId("test-row").find((r) => within(r).queryByText("Hemoglobin"));
     expect(row).toBeDefined();
     expect(within(row!).getByText("Low")).toBeInTheDocument();
+    expect(within(row!).getAllByTestId("range-bar").length).toBeGreaterThan(0);
   });
 
-  it("renders a dash for a missing unit and range", () => {
+  it("renders a dash for a missing range and no bar for a text value", () => {
     const sparse = { ...analysis, tests: [{ name: "Urine colour", value: "Pale yellow", flag: "normal" as const, explanation: "Typical." }] };
     render(<ResultsView analysis={sparse} onReset={() => {}} />);
     const row = screen.getByTestId("test-row");
-    expect(within(row).getAllByText("—").length).toBeGreaterThanOrEqual(2);
+    expect(within(row).getByText("—")).toBeInTheDocument();
+    expect(within(row).queryByTestId("range-bar")).not.toBeInTheDocument();
   });
 
   it("shows the summary and findings instead of a table when there are no lab values", () => {

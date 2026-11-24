@@ -1,6 +1,6 @@
-import { CalendarDays, User } from "lucide-react";
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { isAbnormal } from "@/lib/group-tests";
 import type { ReportAnalysis, Urgency } from "@/lib/schema";
 import { cn } from "@/lib/utils";
 
@@ -10,36 +10,38 @@ const URGENCY: Record<Urgency, { label: string; className: string }> = {
   urgent: { label: "Seek care promptly", className: "bg-status-critical text-status-critical-foreground" },
 };
 
-export function SummaryCard({ analysis }: { analysis: ReportAnalysis }) {
+function outsideRangeLine(analysis: ReportAnalysis): string | null {
+  const total = analysis.tests.length;
+  if (total === 0) return null;
+  const outside = analysis.tests.filter(isAbnormal).length;
+  if (outside === 0) return `All ${total} results within the normal range`;
+  return `${outside} of ${total} results outside the normal range`;
+}
+
+export function SummaryCard({ analysis, action }: { analysis: ReportAnalysis; action?: ReactNode }) {
   const urgency = URGENCY[analysis.urgency];
   const patient = analysis.patient;
-  const patientLine = [patient?.name, patient?.age && `${patient.age} y`, patient?.sex].filter(Boolean).join(" · ");
+  const meta = [patient?.name, patient?.age && `${patient.age} y`, patient?.sex, analysis.reportDate]
+    .filter(Boolean)
+    .join(" · ");
+  const outside = outsideRangeLine(analysis);
 
   return (
-    <Card>
-      <CardHeader className="gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-xl font-semibold tracking-tight">{analysis.reportType}</h2>
-          <Badge className={cn("font-medium", urgency.className)}>{urgency.label}</Badge>
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-medium tracking-tight text-balance sm:text-3xl">{analysis.reportType}</h2>
+          {meta && <p className="text-sm text-muted-foreground tabular-nums">{meta}</p>}
         </div>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-          {patientLine && (
-            <span className="flex items-center gap-1.5">
-              <User className="size-3.5" aria-hidden />
-              {patientLine}
-            </span>
-          )}
-          {analysis.reportDate && (
-            <span className="flex items-center gap-1.5">
-              <CalendarDays className="size-3.5" aria-hidden />
-              {analysis.reportDate}
-            </span>
-          )}
+        {action}
+      </div>
+      <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <Badge className={cn("rounded-md font-medium", urgency.className)}>{urgency.label}</Badge>
+          {outside && <span className="text-sm text-muted-foreground tabular-nums">{outside}</span>}
         </div>
-      </CardHeader>
-      <CardContent>
-        <p className="leading-relaxed">{analysis.summary}</p>
-      </CardContent>
-    </Card>
+        <p className="mt-3 max-w-prose text-[15px] leading-relaxed">{analysis.summary}</p>
+      </div>
+    </section>
   );
 }

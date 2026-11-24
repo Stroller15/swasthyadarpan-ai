@@ -65,7 +65,7 @@ describe("ReportChat", () => {
     vi.stubGlobal("fetch", vi.fn(async () => streamedReply()));
     render(<ReportChat analysis={analysis} maxMessages={2} />);
     await userEvent.type(screen.getByRole("textbox"), "Hello{enter}");
-    expect(await screen.findByText("Chat limit reached — start a new report to keep asking.")).toBeInTheDocument();
+    expect(await screen.findByText("Chat limit reached. Start a new report to keep asking")).toBeInTheDocument();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   });
 

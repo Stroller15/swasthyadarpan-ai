@@ -29,7 +29,8 @@ export function parseRangeText(text: string): Bounds {
   return {};
 }
 
-function boundsFor(test: TestResult): Bounds {
+/** Numeric bounds of a test's reference range, from the structured fields or the printed text. */
+export function boundsFor(test: TestResult): Bounds {
   const range = test.referenceRange;
   if (!range) return {};
   if (range.low !== undefined || range.high !== undefined) {

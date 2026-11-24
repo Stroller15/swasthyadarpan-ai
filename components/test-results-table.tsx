@@ -1,16 +1,10 @@
 import { FlagBadge } from "@/components/flag-badge";
+import { RangeBar } from "@/components/range-bar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { groupTests } from "@/lib/group-tests";
-import type { Flag, TestResult } from "@/lib/schema";
-import { cn } from "@/lib/utils";
+import type { TestResult } from "@/lib/schema";
 
 const DASH = "—";
-
-const ROW_TINT: Partial<Record<Flag, string>> = {
-  low: "bg-status-low-row hover:bg-status-low-row",
-  high: "bg-status-high-row hover:bg-status-high-row",
-  critical: "bg-status-high-row hover:bg-status-high-row",
-};
 
 export function TestResultsTable({ tests }: { tests: TestResult[] }) {
   const groups = groupTests(tests);
@@ -18,47 +12,53 @@ export function TestResultsTable({ tests }: { tests: TestResult[] }) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <Table>
+      <Table className="md:table-fixed">
         <TableHeader>
-          <TableRow>
-            <TableHead className="w-1/2">Test</TableHead>
-            <TableHead>Result</TableHead>
-            <TableHead className="hidden sm:table-cell">Unit</TableHead>
-            <TableHead className="hidden md:table-cell">Normal range</TableHead>
-            <TableHead className="text-right">Flag</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="h-10 px-4 text-xs font-normal text-muted-foreground">Test</TableHead>
+            <TableHead className="hidden h-10 px-4 text-xs font-normal text-muted-foreground sm:table-cell md:w-36">
+              Result
+            </TableHead>
+            <TableHead className="hidden h-10 w-48 px-4 text-xs font-normal text-muted-foreground md:table-cell">
+              Normal range
+            </TableHead>
+            <TableHead className="h-10 px-4 text-right text-xs font-normal text-muted-foreground md:w-24">Flag</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {groups.map((group) => [
             showGroupHeadings && (
-              <TableRow key={`group-${group.category}`} className="bg-muted/50 hover:bg-muted/50">
-                <TableCell colSpan={5} className="py-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              <TableRow key={`group-${group.category}`} className="bg-muted/60 hover:bg-muted/60">
+                <TableCell colSpan={4} className="h-8 px-4 py-0 text-xs font-medium text-muted-foreground">
                   {group.category}
                 </TableCell>
               </TableRow>
             ),
             ...group.tests.map((test, i) => (
-              <TableRow
-                key={`${group.category}-${test.name}-${i}`}
-                data-testid="test-row"
-                className={cn(ROW_TINT[test.flag])}
-              >
-                <TableCell className="align-top whitespace-normal">
+              <TableRow key={`${group.category}-${test.name}-${i}`} data-testid="test-row">
+                <TableCell className="px-4 py-3 align-top whitespace-normal">
                   <p className="font-medium">{test.name}</p>
-                  <p className="mt-0.5 text-sm text-muted-foreground">{test.explanation}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground md:hidden">
-                    Normal range: {test.referenceRange?.text || DASH}
-                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{test.explanation}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 md:hidden">
+                    <span className="text-sm tabular-nums sm:hidden">
+                      <span className="font-medium">{test.value}</span>
+                      {test.unit && <span className="ml-1 text-xs text-muted-foreground">{test.unit}</span>}
+                    </span>
+                    <RangeBar test={test} className="w-24 shrink-0" />
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      Normal {test.referenceRange?.text || DASH}
+                    </span>
+                  </div>
                 </TableCell>
-                <TableCell className="align-top font-mono tabular-nums">
-                  {test.value}
-                  {test.unit && <span className="ml-1 text-xs text-muted-foreground sm:hidden">{test.unit}</span>}
+                <TableCell className="hidden px-4 py-3 align-top whitespace-nowrap tabular-nums sm:table-cell md:whitespace-normal">
+                  <span className="font-medium">{test.value}</span>
+                  {test.unit && <span className="ml-1 text-xs text-muted-foreground">{test.unit}</span>}
                 </TableCell>
-                <TableCell className="hidden align-top text-muted-foreground sm:table-cell">{test.unit || DASH}</TableCell>
-                <TableCell className="hidden align-top text-muted-foreground md:table-cell">
-                  {test.referenceRange?.text || DASH}
+                <TableCell className="hidden px-4 py-3 align-top md:table-cell">
+                  <RangeBar test={test} className="mt-1" />
+                  <p className="mt-1 text-xs text-muted-foreground tabular-nums">{test.referenceRange?.text || DASH}</p>
                 </TableCell>
-                <TableCell className="text-right align-top">
+                <TableCell className="px-4 py-3 text-right align-top">
                   <FlagBadge flag={test.flag} />
                 </TableCell>
               </TableRow>

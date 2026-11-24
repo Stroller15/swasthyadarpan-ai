@@ -16,10 +16,18 @@ export function ResultsView({
   chatSlot?: ReactNode;
 }) {
   return (
-    <div className="space-y-6">
-      <SummaryCard analysis={analysis} />
+    <div className="space-y-10 duration-500 ease-out-soft animate-in fade-in slide-in-from-bottom-2">
+      <SummaryCard
+        analysis={analysis}
+        action={
+          <Button variant="outline" onClick={onReset}>
+            <RotateCcw aria-hidden className="text-muted-foreground" />
+            Analyze another report
+          </Button>
+        }
+      />
       <section aria-labelledby="results-heading" className="space-y-3">
-        <h2 id="results-heading" className="text-lg font-semibold tracking-tight">
+        <h2 id="results-heading" className="text-base font-medium">
           Your results
         </h2>
         {analysis.tests.length > 0 ? (
@@ -32,10 +40,6 @@ export function ResultsView({
       </section>
       <FindingsList analysis={analysis} />
       {chatSlot}
-      <Button variant="outline" onClick={onReset}>
-        <RotateCcw aria-hidden />
-        Analyze another report
-      </Button>
     </div>
   );
 }
