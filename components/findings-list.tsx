@@ -1,33 +1,38 @@
-import { HeartPulse, Lightbulb, MessageCircleQuestion } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ReportAnalysis } from "@/lib/schema";
+import { cn } from "@/lib/utils";
+
+function Section({ title, items, numbered, className }: { title: string; items: string[]; numbered?: boolean; className?: string }) {
+  const List = numbered ? "ol" : "ul";
+  return (
+    <section className={cn("rounded-xl border border-border bg-card p-5", className)}>
+      <h3 className="text-sm font-medium">{title}</h3>
+      <List className="mt-3 space-y-2.5 text-sm leading-relaxed">
+        {items.map((item, i) => (
+          <li key={item} className="flex gap-3">
+            <span className="w-4 shrink-0 text-muted-foreground tabular-nums" aria-hidden>
+              {numbered ? i + 1 : "–"}
+            </span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </List>
+    </section>
+  );
+}
 
 export function FindingsList({ analysis }: { analysis: ReportAnalysis }) {
-  const sections = [
-    { title: "Key findings", items: analysis.keyFindings, Icon: HeartPulse },
-    { title: "Questions for your doctor", items: analysis.questionsForDoctor, Icon: MessageCircleQuestion },
-    { title: "General tips", items: analysis.generalTips, Icon: Lightbulb },
-  ].filter((section) => section.items.length > 0);
+  const { keyFindings, questionsForDoctor, generalTips } = analysis;
+  const side = [
+    questionsForDoctor.length > 0 && <Section key="q" title="Questions for your doctor" items={questionsForDoctor} numbered />,
+    generalTips.length > 0 && <Section key="t" title="General tips" items={generalTips} />,
+  ].filter(Boolean);
+
+  if (keyFindings.length === 0 && side.length === 0) return null;
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {sections.map(({ title, items, Icon }) => (
-        <Card key={title} size="sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Icon className="size-4 text-primary" aria-hidden />
-              {title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc space-y-1.5 pl-4 text-sm leading-relaxed marker:text-muted-foreground">
-              {items.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ))}
+    <div className={cn("grid items-start gap-4", keyFindings.length > 0 && side.length > 0 && "lg:grid-cols-[3fr_2fr]")}>
+      {keyFindings.length > 0 && <Section title="Key findings" items={keyFindings} className="text-[15px]" />}
+      {side.length > 0 && <div className="grid content-start gap-4">{side}</div>}
     </div>
   );
 }

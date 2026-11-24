@@ -3,9 +3,8 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { Bot, Send, Sparkles } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MAX_CHAT_MESSAGES } from "@/lib/constants";
 import type { ReportAnalysis } from "@/lib/schema";
@@ -58,18 +57,24 @@ export function ReportChat({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Sparkles className="size-4 text-primary" aria-hidden />
+    <section aria-labelledby="chat-heading" className="space-y-4 rounded-xl border border-border bg-card p-5 sm:p-6">
+      <div className="space-y-1">
+        <h2 id="chat-heading" className="text-base font-medium">
           Ask about your report
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </h2>
+        <p className="text-sm text-muted-foreground">Answers come only from the results above</p>
+      </div>
         {messages.length === 0 && (
           <div className="flex flex-wrap gap-2">
             {STARTER_QUESTIONS.map((question) => (
-              <Button key={question} variant="outline" size="sm" onClick={() => ask(question)} disabled={busy}>
+              <Button
+                key={question}
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg px-3 text-sm font-normal"
+                onClick={() => ask(question)}
+                disabled={busy}
+              >
                 {question}
               </Button>
             ))}
@@ -82,15 +87,15 @@ export function ReportChat({
               <li
                 key={message.id}
                 className={cn(
-                  "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed whitespace-pre-wrap",
+                  "w-fit max-w-[85%] rounded-xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap",
                   message.role === "user" ? "ml-auto bg-primary text-primary-foreground" : "bg-muted",
                 )}
               >
-                {message.role === "assistant" && <Bot className="mb-1 size-3.5 text-primary" aria-label="Assistant" />}
-                {messageText(message)}
+                <span className="sr-only">{message.role === "user" ? "You: " : "Answer: "}</span>
+                <span>{messageText(message)}</span>
               </li>
             ))}
-            {status === "submitted" && <li className="text-sm text-muted-foreground">Thinking…</li>}
+            {status === "submitted" && <li className="px-1 text-sm text-muted-foreground">Thinking…</li>}
           </ol>
         )}
 
@@ -101,23 +106,23 @@ export function ReportChat({
         )}
 
         {limitReached ? (
-          <p className="text-sm text-muted-foreground">Chat limit reached — start a new report to keep asking.</p>
+          <p className="text-sm text-muted-foreground">Chat limit reached. Start a new report to keep asking</p>
         ) : (
-          <form onSubmit={onSubmit} className="flex gap-2">
+          <form onSubmit={onSubmit} className="flex gap-2 pt-1">
             <Input
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder="Ask a question about your results"
+              className="h-10 rounded-lg px-3"
               aria-label="Ask a question about your results"
               disabled={busy}
               maxLength={500}
             />
-            <Button type="submit" size="icon" disabled={busy || !input.trim()} aria-label="Send">
-              <Send aria-hidden />
+            <Button type="submit" size="icon" className="size-10" disabled={busy || !input.trim()} aria-label="Send">
+              <ArrowUp aria-hidden />
             </Button>
           </form>
         )}
-      </CardContent>
-    </Card>
+    </section>
   );
 }

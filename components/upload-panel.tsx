@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
-import { FileText, FileUp, Sparkles, X } from "lucide-react";
+import { FileText, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MAX_UPLOAD_BYTES } from "@/lib/upload";
 import { cn } from "@/lib/utils";
@@ -46,21 +46,21 @@ export function UploadPanel({ onFile, disabled }: { onFile: (file: File) => void
   });
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div
         {...getRootProps()}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card px-6 py-12 text-center transition-colors hover:border-primary/60 hover:bg-primary/5",
+          "group flex cursor-pointer items-center gap-4 rounded-xl border border-dashed border-foreground/20 bg-card px-5 py-6 transition-colors duration-150 hover:border-primary/60 hover:bg-primary/[0.03] focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none sm:py-8",
           isDragActive && "border-primary bg-primary/5",
           disabled && "pointer-events-none opacity-60",
         )}
       >
         {/* react-dropzone's hidden input style differs slightly between server and client render. */}
         <input {...getInputProps()} data-testid="upload-input" suppressHydrationWarning />
-        <div className="rounded-full bg-primary/10 p-3 text-primary">
-          <FileUp className="size-6" aria-hidden />
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors duration-150 group-hover:text-primary">
+          <Upload className="size-[18px]" strokeWidth={1.75} aria-hidden />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="font-medium">
             {isDragActive
               ? "Drop your report here"
@@ -72,17 +72,17 @@ export function UploadPanel({ onFile, disabled }: { onFile: (file: File) => void
         </div>
       </div>
       {selected && (
-        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <FileText className="size-5 shrink-0 text-primary" aria-hidden />
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 duration-200 animate-in fade-in slide-in-from-top-1 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-3 pl-1">
+            <FileText className="size-[18px] shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{selected.name}</p>
-              <p className="text-xs text-muted-foreground">{formatBytes(selected.size)}</p>
+              <p className="text-xs text-muted-foreground tabular-nums">{formatBytes(selected.size)}</p>
             </div>
             <Button
               variant="ghost"
               size="icon-sm"
-              className="ml-auto sm:ml-0"
+              className="ml-auto text-muted-foreground sm:ml-0"
               onClick={() => setSelected(null)}
               aria-label={`Remove ${selected.name}`}
               disabled={disabled}
@@ -90,8 +90,7 @@ export function UploadPanel({ onFile, disabled }: { onFile: (file: File) => void
               <X aria-hidden />
             </Button>
           </div>
-          <Button size="lg" onClick={() => onFile(selected)} disabled={disabled}>
-            <Sparkles aria-hidden />
+          <Button size="lg" className="h-10 px-4" onClick={() => onFile(selected)} disabled={disabled}>
             Analyze report
           </Button>
         </div>
