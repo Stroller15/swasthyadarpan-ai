@@ -1,4 +1,16 @@
+<div align="center">
+
 # SwasthyaDarpan
+
+[Live app](https://swasthyadarpan.vercel.app/) · [How it works](#how-it-works) · [Run it locally](#run-it-locally)
+
+[![CI](https://github.com/Stroller15/swasthyadarpan-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Stroller15/swasthyadarpan-ai/actions/workflows/ci.yml)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![React](https://img.shields.io/badge/React-19-149eca?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)
+![Gemini](https://img.shields.io/badge/Google-Gemini-4285f4?logo=google&logoColor=white)
+
+</div>
 
 **Understand your lab report in plain language.** Upload a blood test or diagnostic report (PDF or photo). Every value is extracted, explained simply and checked against its normal range, and you can ask follow-up questions about your results.
 
